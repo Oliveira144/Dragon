@@ -221,15 +221,20 @@ st.write("**Qual foi o resultado da última rodada?**")
 
 cols_outcome = st.columns(3)
 with cols_outcome[0]:
+    # Botão para DRAGÃO (VERMELHO)
     if st.button("🔴 Dragão", use_container_width=True, type="primary"):
         st.session_state.analyzer.add_outcome('H')
         st.rerun()
 with cols_outcome[1]:
-    if st.button("🔵 Tigre", use_container_width=True, type="primary"):
+    # Botão para TIGRE (AMARELO)
+    # A cor primária do Streamlit é azul, então usamos apenas o emoji para a cor.
+    if st.button("🟡 Tigre", use_container_width=True):
         st.session_state.analyzer.add_outcome('A')
         st.rerun()
 with cols_outcome[2]:
-    if st.button("🟡 Empate", use_container_width=True, type="primary"):
+    # Botão para EMPATE (VERDE)
+    # A cor primária do Streamlit é azul, então usamos apenas o emoji para a cor.
+    if st.button("🟢 Empate", use_container_width=True):
         st.session_state.analyzer.add_outcome('T')
         st.rerun()
 
@@ -256,13 +261,16 @@ if current_prediction:
     bg_color_prediction = ""
     if current_prediction == 'H':
         display_prediction = "🔴 DRAGÃO"
+        # Cor de fundo para o Dragão (Vermelho)
         bg_color_prediction = "rgba(255, 0, 0, 0.2)"
     elif current_prediction == 'A':
-        display_prediction = "🔵 TIGRE"
-        bg_color_prediction = "rgba(0, 0, 255, 0.2)"
-    else:
-        display_prediction = "🟡 EMPATE"
+        display_prediction = "🟡 TIGRE"
+        # Cor de fundo para o Tigre (Amarelo)
         bg_color_prediction = "rgba(255, 255, 0, 0.2)"
+    else:
+        display_prediction = "🟢 EMPATE"
+        # Cor de fundo para o Empate (Verde)
+        bg_color_prediction = "rgba(0, 128, 0, 0.2)"
 
     st.markdown(f"""
     <div style="
@@ -318,7 +326,8 @@ if st.session_state.analyzer.history:
 
         for i in range(start, end):
             outcome = outcomes[i]
-            emoji = "🔴" if outcome == 'H' else "🔵" if outcome == 'A' else "🟡"
+            # Atualiza os emojis para refletir as novas cores
+            emoji = "🔴" if outcome == 'H' else "🟡" if outcome == 'A' else "🟢"
             with cols[i - start]:
                 st.markdown(f"<div style='font-size: 24px; text-align: center;'>{emoji}</div>", unsafe_allow_html=True)
 else:
@@ -334,13 +343,16 @@ if st.session_state.analyzer.signals:
         bg_color = ""
         if signal['prediction'] == 'H':
             display = "🔴 DRAGÃO"
+            # Cor de fundo para o Dragão (Vermelho)
             bg_color = "rgba(255, 0, 0, 0.1)"
         elif signal['prediction'] == 'A':
-            display = "🔵 TIGRE"
-            bg_color = "rgba(0, 0, 255, 0.1)"
-        else:
-            display = "🟡 EMPATE"
+            display = "🟡 TIGRE"
+            # Cor de fundo para o Tigre (Amarelo)
             bg_color = "rgba(255, 255, 0, 0.1)"
+        else:
+            display = "🟢 EMPATE"
+            # Cor de fundo para o Empate (Verde)
+            bg_color = "rgba(0, 128, 0, 0.1)"
 
         status = signal.get('correct', '')
         color = "green" if status == "✅" else "red" if status == "❌" else "gray"
