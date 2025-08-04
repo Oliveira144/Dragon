@@ -70,7 +70,8 @@ class DragonTigerAnalyzer:
 
     def detect_pattern(self):
         """
-        Detecta padrões no histórico, priorizando sequências longas e a tendência geral.
+        Detecta padrões no histórico com base na lista de 30 padrões fornecida,
+        priorizando os mais longos e mais fortes.
         """
         if len(self.history) < 2:
             return None, None
@@ -79,93 +80,125 @@ class DragonTigerAnalyzer:
         n = len(outcomes)
 
         # ----------------------------------------------------
-        # Padrões de Sequências Fortes (Maior Prioridade)
+        # 1. Padrões de Repetição (Streaks)
         # ----------------------------------------------------
-        
-        # Padrão 1: HHHH (4x Dragão seguidos)
+        # Padrão 1: Dragon Streak (4 ou mais)
         if n >= 4 and outcomes[-4:] == ['H', 'H', 'H', 'H']:
             return 1, 'H'
 
-        # Padrão 2: AAAA (4x Tigre seguidos)
+        # Padrão 2: Tiger Streak (4 ou mais)
         if n >= 4 and outcomes[-4:] == ['A', 'A', 'A', 'A']:
             return 2, 'A'
             
-        # Padrão 6: H-A-H-A-H-A (Serpentina de 6 ou mais)
-        if n >= 6 and all(outcomes[i] != outcomes[i-1] for i in range(n-5, n)):
-            return 6, 'H' if outcomes[-1] == 'A' else 'A'
-            
-        # Padrão 5: H-H-A-A (Sequência Dupla)
-        if n >= 4 and outcomes[-4:] == ['H', 'H', 'A', 'A']:
-            return 5, 'H'
+        # Padrão 3: Long Streak Breaker (após 5 vitórias, sugere o lado oposto)
+        if n >= 6 and outcomes[-6:-1] == ['H', 'H', 'H', 'H', 'H']:
+            return 3, 'A'
+        if n >= 6 and outcomes[-6:-1] == ['A', 'A', 'A', 'A', 'A']:
+            return 3, 'H'
 
-        # Padrão 5b: A-A-H-H (Sequência Dupla Inversa)
-        if n >= 4 and outcomes[-4:] == ['A', 'A', 'H', 'H']:
-            return 5, 'A'
-
-        # Padrão 9: H-A-A-H-A-A
-        if n >= 6 and outcomes[-6:] == ['H', 'A', 'A', 'H', 'A', 'A']:
-            return 9, 'A'
-
-        # Padrão 10: A-H-H-A-H-H
-        if n >= 6 and outcomes[-6:] == ['A', 'H', 'H', 'A', 'H', 'H']:
-            return 10, 'H'
-
-        # Padrão 16: A-A-A-H-H-H
-        if n >= 6 and outcomes[-6:] == ['A', 'A', 'A', 'H', 'H', 'H']:
-            return 16, 'H'
-            
-        # Padrão 17: H-H-D-H-H (Ignorar Empate)
+        # Padrão 5: Broken Streak (com interrupção de Tie)
         if n >= 5 and outcomes[-5:] == ['H', 'H', 'T', 'H', 'H']:
-            return 17, 'H'
-        
+            return 5, 'H'
+        if n >= 5 and outcomes[-5:] == ['A', 'A', 'T', 'A', 'A']:
+            return 5, 'A'
+            
         # ----------------------------------------------------
-        # Padrões de Tendência e Reescrita de Paleta
+        # 2. Padrões Alternados (Zig-Zag e Variantes)
+        # ----------------------------------------------------
+        # Padrão 6: Zig-Zag Simples (alternância direta)
+        if n >= 4 and outcomes[-4:] == ['H', 'A', 'H', 'A']:
+            return 6, 'H'
+        if n >= 4 and outcomes[-4:] == ['A', 'H', 'A', 'H']:
+            return 6, 'A'
+
+        # Padrão 8: Zig-Zag Duplo
+        if n >= 6 and outcomes[-6:] == ['H', 'H', 'A', 'A', 'H', 'H']:
+            return 8, 'A'
+        if n >= 6 and outcomes[-6:] == ['A', 'A', 'H', 'H', 'A', 'A']:
+            return 8, 'H'
+            
+        # ----------------------------------------------------
+        # 3. Padrões de Blocos (Grupos de Vitórias)
+        # ----------------------------------------------------
+        # Padrão 12: Blocos de 3
+        if n >= 6 and outcomes[-6:] == ['H', 'H', 'H', 'A', 'A', 'A']:
+            return 12, 'H'
+        if n >= 6 and outcomes[-6:] == ['A', 'A', 'A', 'H', 'H', 'H']:
+            return 12, 'A'
+
+        # Padrão 13: Espelho Curto
+        if n >= 6 and outcomes[-3:] == outcomes[-6:-3]:
+            return 13, outcomes[-3]
+            
+        # Padrão 14: Espelho Longo
+        if n >= 8 and outcomes[-4:] == outcomes[-8:-4]:
+            return 14, outcomes[-4]
+
+        # Padrão 15: Reflexo Oposto
+        if n >= 8 and outcomes[-8:] == ['H', 'H', 'A', 'A', 'T', 'T', 'H', 'H']:
+            return 15, 'A'
+        if n >= 8 and outcomes[-8:] == ['A', 'A', 'H', 'H', 'T', 'T', 'A', 'A']:
+            return 15, 'H'
+
+        # ----------------------------------------------------
+        # 4. Padrões de Empate (Tie)
+        # ----------------------------------------------------
+        # Padrão 17: Tie Duplo
+        if n >= 2 and outcomes[-2:] == ['T', 'T']:
+            # Sugere o oposto do que veio antes do Tie duplo, se houver
+            if n > 2:
+                return 17, 'H' if outcomes[-3] == 'A' else 'A'
+            return 17, None # Nenhum padrão claro para seguir após o Tie Duplo
+
+        # ----------------------------------------------------
+        # 5. Padrões por Frequência / Tendência
         # ----------------------------------------------------
         last_10_outcomes = outcomes[-10:]
         h_count = last_10_outcomes.count('H')
         a_count = last_10_outcomes.count('A')
         
-        # Padrão de Tendência Dominante (Mais de 70% de um lado nos últimos 10)
-        if h_count >= 7:
-            return 18, 'H'
-        if a_count >= 7:
-            return 19, 'A'
+        # Padrão 21: Dominância do Dragon (80% em 10 rodadas)
+        if h_count >= 8:
+            return 21, 'H'
             
-        # Padrão de Inversão de Paleta (Após uma tendência forte, o lado oposto começa a dominar)
-        if n >= 5 and outcomes[-3:].count('H') == 0 and outcomes[-5:].count('A') == 0:
-            if outcomes[-1] == 'A':
-                return 20, 'A'
-        if n >= 5 and outcomes[-3:].count('A') == 0 and outcomes[-5:].count('H') == 0:
-            if outcomes[-1] == 'H':
-                return 20, 'H'
+        # Padrão 22: Dominância do Tiger (80% em 10 rodadas)
+        if a_count >= 8:
+            return 22, 'A'
 
         # ----------------------------------------------------
-        # Padrões Já Existentes e de Menor Prioridade
+        # 6. Padrões Compostos / Avançados (simplificados)
         # ----------------------------------------------------
-        
-        # Padrão Rápido 2: Repetição (Ex: H H H -> Sugere H)
-        if n >= 3 and outcomes[-3:] == [outcomes[-1], outcomes[-1], outcomes[-1]]:
-            return 32, outcomes[-1]
+        # Padrão 28: Multiplicação por Bloco
+        if n >= 4 and outcomes[-4:] == ['H', 'A', 'H', 'A']:
+            return 28, 'H'
+        if n >= 4 and outcomes[-4:] == ['A', 'H', 'A', 'H']:
+            return 28, 'A'
 
-        # Padrão: 2x Dragão, 1x Tigre (HH A) -> Sugere Dragão
+        # ----------------------------------------------------
+        # Padrões menores e de menor prioridade (do sistema anterior)
+        # ----------------------------------------------------
+        # Repetição de 3
+        if n >= 3 and outcomes[-3:] == ['H', 'H', 'H']:
+            return 31, 'H'
+        if n >= 3 and outcomes[-3:] == ['A', 'A', 'A']:
+            return 31, 'A'
+
+        # Padrão H-H-A
         if n >= 3 and outcomes[-3:] == ['H', 'H', 'A']:
-            return 33, 'H'
-
-        # Padrão: 2x Tigre, 1x Dragão (AA H) -> Sugere Tigre
+            return 32, 'H'
         if n >= 3 and outcomes[-3:] == ['A', 'A', 'H']:
-            return 34, 'A'
-
-        # Padrão: Dragão, Tigre, Dragão (HAH) -> Sugere Tigre
-        if n >= 3 and outcomes[-3:] == ['H', 'A', 'H']:
-            return 35, 'A'
-
-        # Padrão: Tigre, Dragão, Tigre (AHA) -> Sugere Dragão
-        if n >= 3 and outcomes[-3:] == ['A', 'H', 'A']:
-            return 36, 'H'
+            return 32, 'A'
         
-        # Padrão Rápido 1: Alternância (Ex: H A -> Sugere H)
+        # Padrão H-A-H
+        if n >= 3 and outcomes[-3:] == ['H', 'A', 'H']:
+            return 33, 'A'
+        if n >= 3 and outcomes[-3:] == ['A', 'H', 'A']:
+            return 33, 'H'
+            
+        # Padrão de alternância simples
         if n >= 2 and outcomes[-1] != outcomes[-2]:
-            return 31, outcomes[-1]
+            return 34, outcomes[-1]
+
 
         return None, None
 
