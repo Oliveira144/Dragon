@@ -139,6 +139,7 @@ with col5:
 st.markdown("---")
 
 st.markdown("### 2. Histórico de Resultados")
+# A LINHA ABAIXO FOI ALTERADA PARA EXIBIR OS EMOJIS
 historico_str = " ".join([mapear_emojis[r] for r in reversed(st.session_state.historico)])
 st.markdown(f"**Mais Recente → Mais Antigo:** {historico_str}")
 
@@ -157,3 +158,4 @@ else:
 st.markdown("<br><br><br>", unsafe_allow_html=True)
 st.markdown("---")
 st.write("Desenvolvido para análise de padrões de Dragon Tiger com Streamlit. **Lembre-se:** jogue com responsabilidade.")
+
