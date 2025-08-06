@@ -9,7 +9,8 @@ st.set_page_config(
 )
 
 # --- Variáveis de Mapeamento ---
-mapear_emojis = {'D': '🐉', 'T': '🐯', 'E': '🟡'}
+# ALTERAÇÃO AQUI: Mapeando 'D' e 'T' para emojis de cores em vez de animais
+mapear_emojis = {'D': '🔴', 'T': '🟡', 'E': '🟢'}
 
 # --- Funções de Análise de Padrões ---
 def analisar_padrao_dragon_tiger(historico):
@@ -23,7 +24,7 @@ def analisar_padrao_dragon_tiger(historico):
     # Invertemos o histórico para analisar do mais recente para o mais antigo
     hist_recente = list(historico)[::-1]
 
-    # --- ANÁLISE PRIORITÁRIA DE EMPATES (🟡) ---
+    # --- ANÁLISE PRIORITÁRIA DE EMPATES (🟢) ---
     # 6. Padrão Tie Âncora (Empate inserido para quebrar a leitura)
     # Aposta: Alta probabilidade de repetir o lado anterior.
     if len(hist_recente) >= 2 and hist_recente[0] == 'E' and hist_recente[1] in ['D', 'T']:
@@ -118,13 +119,13 @@ st.write("Clique nos botões correspondentes ao resultado do jogo. 'Dragon' e 'T
 
 col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
-    if st.button("🐉 Dragon", use_container_width=True):
+    if st.button("🔴 Dragon", use_container_width=True):
         st.session_state.historico.append('D')
 with col2:
-    if st.button("🐯 Tiger", use_container_width=True):
+    if st.button("🟡 Tiger", use_container_width=True):
         st.session_state.historico.append('T')
 with col3:
-    if st.button("🟡 Empate", use_container_width=True):
+    if st.button("🟢 Empate", use_container_width=True):
         st.session_state.historico.append('E')
 with col4:
     st.markdown("<br>", unsafe_allow_html=True)
@@ -139,7 +140,7 @@ with col5:
 st.markdown("---")
 
 st.markdown("### 2. Histórico de Resultados")
-# A LINHA ABAIXO FOI ALTERADA PARA EXIBIR OS EMOJIS
+# A linha que exibe o histórico usa o novo mapeamento de emojis
 historico_str = " ".join([mapear_emojis[r] for r in reversed(st.session_state.historico)])
 st.markdown(f"**Mais Recente → Mais Antigo:** {historico_str}")
 
@@ -158,4 +159,3 @@ else:
 st.markdown("<br><br><br>", unsafe_allow_html=True)
 st.markdown("---")
 st.write("Desenvolvido para análise de padrões de Dragon Tiger com Streamlit. **Lembre-se:** jogue com responsabilidade.")
-
